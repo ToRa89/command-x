@@ -181,7 +181,12 @@ struct ContentView: View {
     }
 
     private func openSystemSettings() {
-        // Open System Settings > Privacy & Security > Accessibility
+        // Registers Command X in the Accessibility list (unchecked) and shows the system prompt.
+        // macOS does not allow an app to switch the checkbox on itself; the user must do that.
+        let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
+        _ = AXIsProcessTrustedWithOptions(options)
+
+        // Also open System Settings > Privacy & Security > Accessibility
         let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
         NSWorkspace.shared.open(url)
     }

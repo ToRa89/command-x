@@ -523,6 +523,9 @@ extension AppDelegate {
         HotKeyManager.shared.unregisterHotKeys()
     }
     private func requestInitialPermissions() {
+        // Register Command X in the Accessibility list (unchecked) and show the system prompt
+        _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
+
         // Open System Settings > Privacy & Security > Accessibility
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
             NSWorkspace.shared.open(url)
