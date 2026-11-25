@@ -56,6 +56,8 @@ private struct GlassGroup<Content: View>: View {
 
 struct ContentView: View {
     @AppStorage("cutSoundEnabled") var cutSoundEnabled: Bool = true
+    @AppStorage("autoUpdateCheck") var autoUpdateCheck: Bool = true
+    @ObservedObject private var updater = UpdateChecker.shared
     @State private var isAccessibilityGranted: Bool = AXIsProcessTrusted()
     @State private var showPermissionAlert = false
     @State private var launchAtLogin: Bool = true
@@ -64,6 +66,7 @@ struct ContentView: View {
         GlassGroup(spacing: 12) {
             VStack(spacing: 12) {
                 header
+                updateCard
                 permissionCard
                 optionsCard
                 actions
@@ -151,10 +154,77 @@ struct ContentView: View {
             Toggle("Crumple sound when cutting", isOn: $cutSoundEnabled)
             Divider().opacity(0.4)
             Toggle("Launch at Login", isOn: $launchAtLogin)
+            Divider().opacity(0.4)
+            Toggle("Check for updates at launch", isOn: $autoUpdateCheck)
+            HStack {
+                Text(updateStatusText)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("Check Now") { Task { await updater.check() } }
+                    .glassButton()
+                    .controlSize(.small)
+                    .disabled(updater.state == .checking || updater.state == .installing)
+            }
         }
         .toggleStyle(.switch)
         .padding(14)
         .glassCard()
+    }
+
+    private var updateStatusText: String {
+        switch updater.state {
+        case .checking: return "Checking…"
+        case .upToDate: return "Version \(UpdateChecker.currentVersion) is up to date"
+        default: return "Version \(UpdateChecker.currentVersion)"
+        }
+    }
+
+    @ViewBuilder
+    private var updateCard: some View {
+        switch updater.state {
+        case .available(let release):
+            VStack(alignment: .leading, spacing: 8) {
+                Label("Update \(release.version) available", systemImage: "arrow.down.circle.fill")
+                    .font(.headline)
+                    .foregroundStyle(Color.accentColor)
+                Text("After the update, macOS may ask for Accessibility access again.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack {
+                    Button("Install and Restart") { Task { await updater.install(release) } }
+                        .glassButton()
+                        .controlSize(.small)
+                    Button("Release Notes") { NSWorkspace.shared.open(release.pageURL) }
+                        .buttonStyle(.plain)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .glassCard()
+        case .installing:
+            HStack(spacing: 10) {
+                ProgressView().controlSize(.small)
+                Text("Installing update…").font(.headline)
+                Spacer(minLength: 0)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .glassCard()
+        case .failed(let message):
+            Label(message, systemImage: "exclamationmark.triangle.fill")
+                .font(.caption)
+                .foregroundStyle(Color.orange)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassCard()
+        default:
+            EmptyView()
+        }
     }
 
     private var actions: some View {

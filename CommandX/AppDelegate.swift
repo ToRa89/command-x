@@ -37,7 +37,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Register default values so bool(forKey:) returns the correct fallback
         // without needing nil-coalescing at every read site.
-        UserDefaults.standard.register(defaults: ["cutSoundEnabled": true])
+        UserDefaults.standard.register(defaults: ["cutSoundEnabled": true, "autoUpdateCheck": true])
 
         // Check if this is first launch
         let isFirstLaunch = !UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
@@ -77,6 +77,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Check initial Finder status
         updateFinderStatus()
         
+        // Check for a newer release shortly after start (can be switched off in the popover)
+        if UserDefaults.standard.bool(forKey: "autoUpdateCheck") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+                Task { @MainActor in
+                    if let release = await UpdateChecker.shared.check() {
+                        self?.showUserNotification(
+                            title: "Command X \(release.version) available",
+                            message: "Open the Command X menu bar icon to install the update.")
+                    }
+                }
+            }
+        }
+
         // Delay launch at login setup to avoid issues during app launch
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             let shouldLaunch = UserDefaults.standard.bool(forKey: "launchAtLogin")
