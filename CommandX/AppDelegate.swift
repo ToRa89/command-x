@@ -56,9 +56,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem?.button {
-            // Use scissors icon from SF Symbols
+            // Use the macOS Command key symbol from SF Symbols
             if #available(macOS 11.0, *) {
-                button.image = NSImage(systemSymbolName: "scissors", accessibilityDescription: "Command X")
+                button.image = NSImage(systemSymbolName: "command", accessibilityDescription: "Command X")
             } else {
                 // Fallback for older macOS versions
                 button.image = NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
@@ -99,6 +99,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    /// Paper-crumple sound, bundled as crumple.wav (synthesized by tools/make_crumple_sound.py).
+    private lazy var cutSound: NSSound? = {
+        guard let url = Bundle.main.url(forResource: "crumple", withExtension: "wav") else {
+            logger.error("crumple.wav missing from bundle, falling back to system sound")
+            return NSSound(named: NSSound.Name("Funk"))
+        }
+        return NSSound(contentsOf: url, byReference: false)
+    }()
+
+    private func playCutSound() {
+        // Restart if it is still playing from a previous cut
+        cutSound?.stop()
+        cutSound?.play()
+    }
+
     private func handleCut() {
         // Hotkey triggered
         logger.debug("handleCut: Command+X pressed")
@@ -116,7 +131,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Play sound if enabled
         let soundEnabled = UserDefaults.standard.bool(forKey: "cutSoundEnabled")
         if soundEnabled {
-            NSSound(named: NSSound.Name("Funk"))?.play()
+            playCutSound()
         }
         tryGetFinderSelectionAndCut(retryCount: 0)
     }

@@ -1,41 +1,24 @@
-# CommandX v1.0.0 - Initial Release
+# Command X v1.1.0 (Glass Edition)
 
-CommandX is a lightweight macOS menu bar app that brings familiar cut-and-paste functionality to file operations in Finder using global shortcuts.
+Fork of [EnableStartup/command-x](https://github.com/EnableStartup/command-x) with the community fixes from upstream PR #1 (marton78) merged in.
 
-## ✨ Features
-- **Global Shortcuts**: Cut and paste files/folders anywhere on your Mac with Command+X and Command+V
-- **Launch at Login**: Option to automatically start the app when you log in
-- **Sound Effects**: Plays a satisfying sound when cutting files
-- **Menu Bar Interface**: Clean, minimal UI for settings
-- **Accessibility Support**: Full keyboard navigation and screen reader compatible
+## Changes
+- Bugfixes from PR #1: AppleScript error handling, hotkey cleanup, logging, unit tests, Launch at Login handling
+- New UI in Liquid Glass (macOS 26+), system materials on macOS 12 to 25
+- App icon and menu bar icon: the macOS Command key symbol
+- New cut sound: paper crumple (synthesized, see `tools/make_crumple_sound.py`)
+- Minimum macOS 12.0 (Xcode 27 no longer builds for 11)
+- Release build via `scripts/build-dmg.sh` and the `Release` GitHub Actions workflow
 
-## 🖥️ Requirements
-- macOS Big Sur (11.0) or later
+## Installation
+1. Download `CommandX-1.1.0.dmg` (or the `.zip`) from the release page and drag Command X to Applications.
+2. The app is ad-hoc signed, not notarized. On first launch: System Settings > Privacy & Security > Open Anyway.
+3. Allow Accessibility and Automation (Finder, System Events) when asked.
 
-## 📥 Installation
+Verify the download against `SHA256SUMS.txt`.
 
----
-> [!IMPORTANT]
-> We don't have an Apple Developer account yet. The application will show a popup on first launch that the app is from an unidentified developer.
-> 1. Click **OK** to close the popup.
-> 2. Open **System Settings** > **Privacy & Security**.
-> 3. Scroll down and click **Open Anyway** next to the warning about the app.
-> 4. Confirm your choice if prompted.
->
-> You only need to do this once.
+## Usage
+Select files in Finder, Command+X to cut (crumple sound), Command+V in the target folder to move them.
 
-### Download and Install Manually
-<a href="https://github.com/marton78/command-x/releases/latest/download/CommandX.dmg.zip" target="_self"><img width="200" src="https://github.com/user-attachments/assets/e3179be1-8416-4b8a-b417-743e1ecc67d6" alt="Download for macOS" /></a>
-
-## 🎵 Usage
-- Select files/folders in Finder
-- Press **Command+X** to cut (with sound effect)
-- Navigate to destination folder
-- Press **Command+V** to paste
-- Access settings via the menu bar icon
-
-## 📜 License
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
-
-## 🐛 Known Issues
-- None reported in initial release
+## License
+GPL-3.0, see LICENSE.

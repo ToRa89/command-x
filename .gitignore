@@ -5,3 +5,5 @@ xcuserdata/
 *.dmg
 build/
 DerivedData/
+build/
+dist/

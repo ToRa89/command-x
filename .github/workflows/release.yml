@@ -1,0 +1,27 @@
+name: Release
+
+# Manual trigger: builds the DMG on a macOS runner and attaches it to the release for the given tag.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, e.g. v1.1.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  dmg:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build DMG
+        run: ./scripts/build-dmg.sh
+      - name: Create release if missing and upload assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TAG" --generate-notes
+          gh release upload "$TAG" dist/*.dmg dist/*.zip dist/SHA256SUMS.txt --clobber
